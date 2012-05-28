@@ -1,0 +1,1 @@
+ocra --no-enc ..\submit_to_sabrix.rb ..\app
