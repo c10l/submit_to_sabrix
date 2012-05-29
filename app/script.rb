@@ -10,11 +10,12 @@ module Script
     end
   end
 
-  def generate_outdata_filename(path)
-    filename = File.basename path
+  def generate_outdata_filename(file, sabrix)
+    prefix = sabrix.url.match(/[^http:\/\/][^\.]+/).to_s + '_' + sabrix.url.match(/:\d+\//).to_s[1..-2] + '_'
+    filename = File.basename file
     @options.suffix ? postfix = "#{@options.suffix}.xml"
                     : postfix = '-outdata.xml'
-    outfile = filename.sub(/-indata/i, '').sub('.xml', postfix)
+    prefix + filename.sub(/-indata/i, '').sub('.xml', postfix)
   end
 
   def confirm(message, &block)
@@ -44,4 +45,18 @@ module Script
     end
   end
 
+  def post(indata, sabrix, outfile)
+    $log.info "=> Submitting to Sabrix on #{sabrix.url}"
+    @outdata = sabrix.submit indata.xml
+
+    with_debug("saving file #{outfile}") do
+      begin
+        file = File.open(outfile, "w")
+        $log.info "=> Saving to #{File.basename(file)} ..."
+        file.puts @outdata.body
+      ensure
+        file.close
+      end
+    end
+  end
 end

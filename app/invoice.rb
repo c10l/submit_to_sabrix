@@ -16,7 +16,7 @@ class Invoice
   end
 
   def set_audit(audit = false)
-    return @xml if @xml.is_audited?.to_s == audit
+    return @xml if is_audited? == audit
     doc = Nokogiri::XML(@xml)
     node = Nokogiri::XML::Node.new 'IS_AUDITED', doc
     node.content = audit.to_s

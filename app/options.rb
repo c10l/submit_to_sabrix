@@ -4,7 +4,7 @@ class Options
   include Script
 
   attr_accessor :yes_to_all, :no_to_all
-  attr_reader :no_audit, :suffix, :file_list
+  attr_reader :no_audit, :suffix, :file_list, :url_list
 
   # TODO: Add an option to use a list of URLs
 
@@ -18,7 +18,13 @@ class Options
 
       opts.on('-u', '--url URL', 'Post to URL') do |url|
         raise 'Invalid URL, please begin with http://' unless url =~ /^http:\/\//
-        $sabrix = Sabrix.new(url)
+        @url_list ||= []
+        @url_list << url
+        # $sabrix = Sabrix.new(url)
+      end
+
+      opts.on('-U', '--url-list FILENAME', 'List of URLs to post to (one per line)') do |file|
+        @url_list = File.read(file).split("\n")
       end
 
       @yes_to_all = false

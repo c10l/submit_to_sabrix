@@ -6,9 +6,9 @@ Dir[File.join(File.dirname(__FILE__), "app/*")].each { |file| load file }
 include Script
 
 $log = Logger.new STDERR
-@options = Options.new(ARGV)
+$log.level = Logger::INFO
 
-$log.info "Will post to #{$sabrix.url}"
+@options = Options.new(ARGV)
 
 @options.file_list.each do |file|
   $log.info "Reading file #{file} ..."
@@ -23,22 +23,17 @@ $log.info "Will post to #{$sabrix.url}"
     next unless confirm('Continue anyway? ') { $log.info "Skipping ...\n\n" }
   end
 
-  outfile = generate_outdata_filename file
-  if FileTest.exists?(outfile) then
-    next unless confirm("File #{outfile} exists. Overwrite? ") { $log.info "File exists -- Skipping ...\n\n" }
-  end
+  @options.url_list.each do |url|
+    sabrix = Sabrix.new(url)
 
-  $log.info "=> Submitting to Sabrix on #{$sabrix.url}"
-  @outdata = $sabrix.submit indata.xml
+    $log.info "Will post to #{sabrix.url}"
 
-  with_debug("saving file #{outfile}") do
-    begin
-      file = File.open(outfile, "w")
-      $log.info "=> Saving to #{File.basename(file)} ..."
-      file.puts @outdata.body
-    ensure
-      file.close
+    outfile = generate_outdata_filename file, sabrix
+    if FileTest.exists?(outfile) then
+      next unless confirm("File #{outfile} exists. Overwrite? ") { $log.info "File exists -- Skipping ...\n\n" }
     end
+
+    post indata, sabrix, outfile
   end
 
   puts # Prints out one blank line at the end of the execution
